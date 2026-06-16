@@ -13,7 +13,7 @@ interface DashboardStats {
   recent_agents: any[];
 }
 
-const COLORS = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#06B6D4'];
+const COLORS = ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'];
 
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -36,8 +36,8 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      <div className="spinner-container">
+        <div className="spinner" />
       </div>
     );
   }
@@ -46,104 +46,110 @@ export default function Dashboard() {
   const pieData = Object.entries(eventTypes).map(([name, value]) => ({ name, value }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       {/* 标题 */}
       <div>
-        <h1 className="text-2xl font-bold">仪表盘</h1>
-        <p className="text-gray-500 mt-1">Agent 开发平台概览</p>
+        <h1 className="page-title">仪表盘</h1>
+        <p className="page-subtitle">Agent 开发平台概览</p>
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          icon={<Bot className="w-6 h-6" />}
-          label="Agent 模板"
-          value={stats?.templates ?? 0}
-          color="blue"
-        />
-        <StatCard
-          icon={<Activity className="w-6 h-6" />}
-          label="运行中实例"
-          value={stats?.instances ?? 0}
-          color="green"
-        />
-        <StatCard
-          icon={<Workflow className="w-6 h-6" />}
-          label="工作流"
-          value={stats?.workflows ?? 0}
-          color="purple"
-        />
-        <StatCard
-          icon={<Wrench className="w-6 h-6" />}
-          label="审计事件"
-          value={stats?.audit?.total_events ?? 0}
-          color="yellow"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="opacity-0 animate-fade-in-up stagger-1">
+          <StatCard icon={<Bot className="w-6 h-6" />} label="Agent 模板" value={stats?.templates ?? 0} color="blue" />
+        </div>
+        <div className="opacity-0 animate-fade-in-up stagger-2">
+          <StatCard icon={<Activity className="w-6 h-6" />} label="运行中实例" value={stats?.instances ?? 0} color="green" />
+        </div>
+        <div className="opacity-0 animate-fade-in-up stagger-3">
+          <StatCard icon={<Workflow className="w-6 h-6" />} label="工作流" value={stats?.workflows ?? 0} color="purple" />
+        </div>
+        <div className="opacity-0 animate-fade-in-up stagger-4">
+          <StatCard icon={<Wrench className="w-6 h-6" />} label="审计事件" value={stats?.audit?.total_events ?? 0} color="yellow" />
+        </div>
       </div>
 
       {/* 图表和平台状态 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* 事件分布 */}
         <div className="card">
-          <h2 className="text-lg font-semibold mb-4">审计事件分布</h2>
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-1 h-5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full" />
+            <h2 className="text-base font-semibold text-gray-900">审计事件分布</h2>
+          </div>
           {pieData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={260}>
               <PieChart>
                 <Pie
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  outerRadius={80}
+                  outerRadius={85}
+                  innerRadius={45}
                   dataKey="value"
                   label={({ name, value }) => `${name}: ${value}`}
+                  strokeWidth={2}
+                  stroke="#fff"
                 >
                   {pieData.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: '10px',
+                    border: '1px solid rgba(0,0,0,0.06)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    fontSize: '13px',
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[250px] text-gray-400">
-              暂无审计数据
+            <div className="empty-state h-[260px]">
+              <div className="empty-state-icon">
+                <Activity className="w-7 h-7" />
+              </div>
+              <p className="empty-state-title">暂无审计数据</p>
+              <p className="empty-state-desc">当 Agent 开始处理请求后，数据将在这里展示</p>
             </div>
           )}
         </div>
 
         {/* 平台状态 */}
         <div className="card">
-          <h2 className="text-lg font-semibold mb-4">平台状态</h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <span className="text-sm font-medium">agent-platform</span>
-              <span
-                className={`badge ${
-                  stats?.health?.status === 'healthy' ? 'badge-green' : 'badge-red'
-                }`}
-              >
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-1 h-5 bg-gradient-to-b from-emerald-500 to-teal-500 rounded-full" />
+            <h2 className="text-base font-semibold text-gray-900">平台状态</h2>
+          </div>
+          <div className="space-y-3">
+            <div className="list-item flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">agent-platform</span>
+              <span className={stats?.health?.status === 'healthy' ? 'status-active' : 'status-error'}>
                 {stats?.health?.status === 'healthy' ? '运行中' : '未连接'}
               </span>
             </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <span className="text-sm font-medium">Agent Studio 后端</span>
-              <span className="badge badge-green">运行中</span>
+            <div className="list-item flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">Agent Studio 后端</span>
+              <span className="status-active">运行中</span>
             </div>
 
-            <h3 className="text-sm font-medium text-gray-700 mt-4">最近创建的 Agent</h3>
-            {stats?.recent_agents && stats.recent_agents.length > 0 ? (
-              <div className="space-y-2">
-                {stats.recent_agents.map((agent) => (
-                  <div key={agent.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                    <span>{agent.icon}</span>
-                    <span className="text-sm">{agent.name}</span>
-                    <span className="text-xs text-gray-400 ml-auto">{agent.type}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-400">暂无 Agent 实例</p>
-            )}
+            <div className="pt-3">
+              <h3 className="text-sm font-medium text-gray-700 mb-3">最近创建的 Agent</h3>
+              {stats?.recent_agents && stats.recent_agents.length > 0 ? (
+                <div className="space-y-2">
+                  {stats.recent_agents.map((agent) => (
+                    <div key={agent.id} className="list-item flex items-center gap-2.5">
+                      <span className="text-lg">{agent.icon}</span>
+                      <span className="text-sm font-medium text-gray-800">{agent.name}</span>
+                      <span className="badge badge-blue ml-auto">{agent.type}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400">暂无 Agent 实例</p>
+              )}
+            </div>
           </div>
         </div>
       </div>

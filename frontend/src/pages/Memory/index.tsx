@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Brain, MessageSquare, Search } from 'lucide-react';
+import StatCard from '../../components/StatCard';
 import { api } from '../../api/client';
 
 interface Conversation {
@@ -54,79 +55,57 @@ export default function Memory() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      <div className="spinner-container">
+        <div className="spinner" />
       </div>
     );
   }
 
+  const totalMessages = conversations.reduce((sum, c) => sum + c.message_count, 0);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       {/* 标题 */}
       <div>
-        <h1 className="text-2xl font-bold">记忆系统</h1>
-        <p className="text-gray-500 mt-1">对话历史和记忆统计</p>
+        <h1 className="page-title">记忆系统</h1>
+        <p className="page-subtitle">对话历史和记忆统计</p>
       </div>
 
       {/* 统计 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="stat-card">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <Brain className="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <div className="stat-value">{conversations.length}</div>
-              <div className="stat-label">对话线程</div>
-            </div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <MessageSquare className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <div className="stat-value">
-                {conversations.reduce((sum, c) => sum + c.message_count, 0)}
-              </div>
-              <div className="stat-label">总消息数</div>
-            </div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <Search className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <div className="stat-value">{stats?.reflections ?? 0}</div>
-              <div className="stat-label">反思记录</div>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <StatCard icon={<Brain className="w-6 h-6" />} label="对话线程" value={conversations.length} color="purple" />
+        <StatCard icon={<MessageSquare className="w-6 h-6" />} label="总消息数" value={totalMessages} color="blue" />
+        <StatCard icon={<Search className="w-6 h-6" />} label="反思记录" value={stats?.reflections ?? 0} color="green" />
       </div>
 
       {/* 对话列表 + 详情 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* 对话列表 */}
         <div className="card">
-          <h2 className="text-lg font-semibold mb-4">对话线程</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-1 h-5 bg-gradient-to-b from-purple-500 to-violet-500 rounded-full" />
+            <h2 className="text-base font-semibold text-gray-900">对话线程</h2>
+          </div>
           {conversations.length === 0 ? (
-            <p className="text-gray-400 text-center py-8">暂无对话记录</p>
+            <div className="empty-state py-10">
+              <div className="empty-state-icon">
+                <MessageSquare className="w-7 h-7" />
+              </div>
+              <p className="empty-state-title">暂无对话记录</p>
+            </div>
           ) : (
-            <div className="space-y-2 max-h-[500px] overflow-y-auto">
+            <div className="space-y-1.5 max-h-[500px] overflow-y-auto">
               {conversations.map((conv) => (
                 <button
                   key={conv.thread_id}
                   onClick={() => loadThreadLogs(conv.thread_id)}
-                  className={`w-full text-left p-3 rounded-lg transition-colors ${
+                  className={`w-full text-left p-3 rounded-lg transition-all duration-150 ${
                     selectedThread === conv.thread_id
-                      ? 'bg-primary-50 border border-primary-200'
-                      : 'bg-gray-50 hover:bg-gray-100'
+                      ? 'list-item-active'
+                      : 'list-item'
                   }`}
                 >
-                  <div className="font-medium text-sm truncate">{conv.thread_id}</div>
+                  <div className="font-medium text-sm truncate text-gray-900">{conv.thread_id}</div>
                   <div className="text-xs text-gray-500 mt-1">
                     {conv.message_count} 条事件
                   </div>
@@ -138,43 +117,51 @@ export default function Memory() {
 
         {/* 对话详情 */}
         <div className="lg:col-span-2 card">
-          <h2 className="text-lg font-semibold mb-4">
-            {selectedThread ? `对话详情: ${selectedThread}` : '选择对话查看详情'}
-          </h2>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-1 h-5 bg-gradient-to-b from-indigo-500 to-blue-500 rounded-full" />
+            <h2 className="text-base font-semibold text-gray-900">
+              {selectedThread ? `对话详情: ${selectedThread}` : '选择对话查看详情'}
+            </h2>
+          </div>
           {!selectedThread ? (
-            <p className="text-gray-400 text-center py-8">点击左侧对话查看详情</p>
+            <div className="empty-state py-10">
+              <div className="empty-state-icon">
+                <MessageSquare className="w-7 h-7" />
+              </div>
+              <p className="empty-state-title">点击左侧对话查看详情</p>
+            </div>
           ) : threadLogs.length === 0 ? (
-            <p className="text-gray-400 text-center py-8">暂无事件记录</p>
+            <div className="empty-state py-10">
+              <p className="empty-state-title">暂无事件记录</p>
+            </div>
           ) : (
-            <div className="space-y-3 max-h-[500px] overflow-y-auto">
+            <div className="space-y-2 max-h-[500px] overflow-y-auto">
               {threadLogs.map((log) => (
-                <div key={log.id} className="p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between">
+                <div key={log.id} className="list-item">
+                  <div className="flex items-center justify-between mb-1.5">
                     <span className="badge badge-blue">{log.event_type}</span>
                     <span className="text-xs text-gray-400">
                       {new Date(log.timestamp).toLocaleString('zh-CN')}
                     </span>
                   </div>
                   {log.event_data?.question && (
-                    <p className="text-sm mt-2 text-gray-700">
-                      <strong>问:</strong> {log.event_data.question}
+                    <p className="text-sm mt-1.5 text-gray-700">
+                      <span className="font-medium text-indigo-600">问:</span> {log.event_data.question}
                     </p>
                   )}
                   {log.event_data?.answer_preview && (
                     <p className="text-sm mt-1 text-gray-700">
-                      <strong>答:</strong> {log.event_data.answer_preview}
+                      <span className="font-medium text-emerald-600">答:</span> {log.event_data.answer_preview}
                     </p>
                   )}
-                  {log.event_data?.route_type && (
-                    <p className="text-xs mt-1 text-gray-500">
-                      路由: {log.event_data.route_type}
-                    </p>
-                  )}
-                  {log.duration_ms != null && (
-                    <p className="text-xs mt-1 text-gray-400">
-                      耗时: {log.duration_ms.toFixed(0)}ms
-                    </p>
-                  )}
+                  <div className="flex items-center gap-3 mt-1.5">
+                    {log.event_data?.route_type && (
+                      <span className="text-xs text-gray-500">路由: {log.event_data.route_type}</span>
+                    )}
+                    {log.duration_ms != null && (
+                      <span className="text-xs text-gray-400">{log.duration_ms.toFixed(0)}ms</span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

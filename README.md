@@ -4,7 +4,7 @@ Agent 开发平台 — 可视化管理界面，用于创建、配置和监控 AI
 
 ## 技术栈
 
-- **前端**: React 18 + TypeScript + Vite + Tailwind CSS + ReactFlow
+- **前端**: React 18 + TypeScript + Vite + Tailwind CSS 3 + ReactFlow + Recharts
 - **后端**: FastAPI + SQLite (aiosqlite)
 - **代理目标**: agent-platform (http://localhost:8001)
 
@@ -12,11 +12,11 @@ Agent 开发平台 — 可视化管理界面，用于创建、配置和监控 AI
 
 ```
 agent-studio/
-├── backend/                # FastAPI 管理后端 (端口 8002)
+├── backend/                    # FastAPI 管理后端 (端口 8002)
 │   ├── app/
-│   │   ├── main.py        # 入口
-│   │   ├── db.py          # SQLite 数据库
-│   │   └── routers/       # API 路由
+│   │   ├── main.py            # 入口
+│   │   ├── db.py              # SQLite 数据库 + 预置模板
+│   │   └── routers/           # API 路由
 │   │       ├── agents.py      # Agent 模板管理
 │   │       ├── workflows.py   # 工作流管理 + ReactFlow
 │   │       ├── tools.py       # MCP 工具代理
@@ -24,18 +24,26 @@ agent-studio/
 │   │       ├── dashboard.py   # 仪表盘聚合
 │   │       └── audit.py       # 审计日志代理
 │   └── requirements.txt
-├── frontend/               # React 前端 (端口 5173)
+├── frontend/                   # React 前端 (端口 5173)
+│   ├── postcss.config.js      # PostCSS 配置 (Tailwind + Autoprefixer)
+│   ├── tailwind.config.js     # Tailwind 主题配置
 │   └── src/
-│       ├── api/           # API 客户端
-│       ├── components/    # 共享组件（Layout, Sidebar, CustomNode）
-│       └── pages/         # 7 个页面
-│           ├── Dashboard/     # 仪表盘（统计 + 图表）
-│           ├── Agents/        # Agent 市场（模板 + 实例）
-│           ├── Workflows/     # 工作流编辑器（ReactFlow 拖拽）
+│       ├── index.css          # 设计系统 (组件类 + 动画)
+│       ├── api/               # API 客户端
+│       ├── components/        # 共享组件
+│       │   ├── Layout.tsx     # 页面布局 (侧边栏 + 内容区)
+│       │   ├── Sidebar.tsx    # 深色侧边栏导航
+│       │   ├── StatCard.tsx   # 统计卡片 (渐变图标 + hover 效果)
+│       │   └── CustomNode.tsx # ReactFlow 工作流节点
+│       └── pages/             # 7 个页面
+│           ├── Dashboard/     # 仪表盘 (统计 + 图表 + 入场动画)
+│           ├── Agents/        # Agent 市场 (模板 + 实例 + 模态创建)
+│           ├── Workflows/     # 工作流编辑器 (ReactFlow 拖拽 + 深色面板)
 │           ├── Tools/         # MCP 工具管理
 │           ├── Memory/        # 记忆系统
-│           ├── Audit/         # 审计日志
-│           └── Security/      # 安全治理（Guardrails）
+│           ├── Audit/         # 审计日志 (时间线)
+│           └── Security/      # 安全治理 (Guardrails)
+├── CLAUDE.md                  # AI 开发约束
 └── README.md
 ```
 
@@ -46,7 +54,7 @@ agent-studio/
 ```bash
 cd backend
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-uvicorn app.main:app --reload --port 8002
+python -m uvicorn app.main:app --reload --port 8002
 ```
 
 ### 2. 启动前端
@@ -63,17 +71,35 @@ npm run dev
 - 后端 API: http://localhost:8002/docs
 - 前提: agent-platform 运行在 http://localhost:8001
 
+> **注意**: 如果 `uvicorn` 命令指向其他 venv，使用 `python -m uvicorn` 确保使用当前环境的 Python。
+
+## 设计风格
+
+采用现代科技风设计，参考 Vercel / Linear 设计语言：
+
+| 元素 | 设计 |
+|------|------|
+| 主色 | Indigo (`#6366f1`) 蓝紫色系 |
+| 侧边栏 | 深色背景 (`#0f1117`) + 白色文字 + indigo 激活指示条 |
+| 按钮 | 主按钮 indigo→purple 渐变 + 点击缩放微交互 |
+| 卡片 | 精致阴影 + hover 上浮 + 60% 透明度边框 |
+| 状态 | 脉冲圆点指示器 (绿=运行/黄=停止/红=错误) |
+| 动画 | 页面入场 fade-in-up + 统计卡 stagger 延迟 + 侧边栏 slide-in |
+| 字体 | 系统字体 (PingFang SC / Microsoft YaHei / Segoe UI)，无外部依赖 |
+
+> **禁止使用 Google Fonts** — `fonts.googleapis.com` 在国内被墙，会阻塞 CSS 渲染导致页面样式完全失效。
+
 ## 页面说明
 
 | 页面 | 路由 | 功能 |
 |------|------|------|
-| 仪表盘 | `/` | 查询统计、路由分布图、响应时间、最近查询 |
-| Agent 市场 | `/agents` | 预置模板列表、一键创建实例、管理运行中的 Agent |
-| 工作流编辑器 | `/workflows` | 从模板创建 / 自定义拖拽、ReactFlow 画布、节点类型面板 |
-| 工具管理 | `/tools` | MCP Server 状态、工具列表、工具测试 Playground |
-| 记忆系统 | `/memory` | 系统统计、对话历史浏览、反思记录语义搜索 |
-| 审计日志 | `/audit` | 按事件类型筛选、时间线展示、决策链路追溯 |
-| 安全治理 | `/security` | Guardrails 策略状态、拦截记录、SQL 安全检查 |
+| 仪表盘 | `/` | 查询统计、事件分布环形图、平台状态、最近 Agent |
+| Agent 市场 | `/agents` | 预置模板网格、模态创建实例、脉冲状态管理 |
+| 工作流编辑器 | `/workflows` | 深色面板 + ReactFlow 画布、模板创建、节点拖拽 |
+| 工具管理 | `/tools` | MCP Server 连接状态、工具列表、参数标签 |
+| 记忆系统 | `/memory` | 对话线程列表、事件详情、反思记录 |
+| 审计日志 | `/audit` | 时间线可视化、事件类型筛选、链路追踪 |
+| 安全治理 | `/security` | Guardrails 策略卡片、拦截记录、安全检查项 |
 
 ## 依赖服务
 

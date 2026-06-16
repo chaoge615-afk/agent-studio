@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { RefreshCw, CheckCircle, XCircle } from 'lucide-react';
+import { RefreshCw, CheckCircle, XCircle, Wrench } from 'lucide-react';
 import { api } from '../../api/client';
 
 interface ToolInfo {
@@ -39,19 +39,19 @@ export default function Tools() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      <div className="spinner-container">
+        <div className="spinner" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       {/* 标题 */}
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl font-bold">工具管理</h1>
-          <p className="text-gray-500 mt-1">MCP Server 连接状态和可用工具</p>
+          <h1 className="page-title">工具管理</h1>
+          <p className="page-subtitle">MCP Server 连接状态和可用工具</p>
         </div>
         <button onClick={loadTools} className="btn-secondary flex items-center gap-2">
           <RefreshCw className="w-4 h-4" />
@@ -63,59 +63,60 @@ export default function Tools() {
       <div className="card">
         <div className="flex items-center gap-3">
           {connected ? (
-            <CheckCircle className="w-5 h-5 text-green-500" />
+            <CheckCircle className="w-5 h-5 text-emerald-500" />
           ) : (
-            <XCircle className="w-5 h-5 text-red-500" />
+            <XCircle className="w-5 h-5 text-red-400" />
           )}
-          <span className="font-medium">
-            agent-platform: {connected ? '已连接' : '未连接'}
+          <span className="font-medium text-gray-900">agent-platform</span>
+          <span className={connected ? 'status-active' : 'status-error'}>
+            {connected ? '已连接' : '未连接'}
           </span>
         </div>
       </div>
 
       {/* Server 列表 */}
       {servers.length === 0 ? (
-        <div className="card text-center py-12 text-gray-400">
-          <p>暂无 MCP Server</p>
-          <p className="text-sm mt-2">请确保 agent-platform 已启动并连接 MCP Server</p>
+        <div className="card">
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <Wrench className="w-7 h-7" />
+            </div>
+            <p className="empty-state-title">暂无 MCP Server</p>
+            <p className="empty-state-desc">请确保 agent-platform 已启动并连接 MCP Server</p>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
           {servers.map((server) => (
             <div key={server.name} className="card">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <span className="text-lg">🔧</span>
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center">
+                    <span className="text-xl">🔧</span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">{server.name}</h3>
+                    <h3 className="font-semibold text-base text-gray-900">{server.name}</h3>
                     <p className="text-sm text-gray-500">{server.tool_count} 个工具</p>
                   </div>
                 </div>
-                <span className="badge badge-green">已连接</span>
+                <span className="status-active">已连接</span>
               </div>
 
               {/* 工具列表 */}
               <div className="space-y-2">
                 {server.tools.map((tool) => (
-                  <div
-                    key={tool.name}
-                    className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
+                  <div key={tool.name} className="list-item">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">{tool.name}</span>
-                      <span className="text-xs text-gray-400">MCP Tool</span>
+                      <span className="font-medium text-sm text-gray-900">{tool.name}</span>
+                      <span className="badge badge-blue">MCP</span>
                     </div>
                     {tool.description && (
-                      <p className="text-xs text-gray-500 mt-1">{tool.description}</p>
+                      <p className="text-xs text-gray-500 mt-1 leading-relaxed">{tool.description}</p>
                     )}
                     {tool.inputSchema?.properties && (
-                      <div className="mt-2 flex flex-wrap gap-1">
+                      <div className="mt-2 flex flex-wrap gap-1.5">
                         {Object.keys(tool.inputSchema.properties).map((param) => (
-                          <span key={param} className="badge badge-blue">
-                            {param}
-                          </span>
+                          <span key={param} className="badge badge-purple">{param}</span>
                         ))}
                       </div>
                     )}

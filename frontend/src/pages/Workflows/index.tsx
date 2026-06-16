@@ -13,7 +13,7 @@ import {
   Panel,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Plus, Save, Trash2, Download, Upload } from 'lucide-react';
+import { Save, Trash2, Download } from 'lucide-react';
 import { api } from '../../api/client';
 import CustomNode from '../../components/CustomNode';
 
@@ -74,7 +74,6 @@ export default function Workflows() {
       setSelectedId(id);
       setWorkflowName(wf.name);
 
-      // 转换后端数据为 ReactFlow 格式
       const rfNodes: Node[] = (wf.nodes || []).map((n: any) => ({
         id: n.id,
         type: 'custom',
@@ -93,7 +92,7 @@ export default function Workflows() {
         target: e.target,
         label: e.label || '',
         animated: true,
-        style: { stroke: '#6366f1' },
+        style: { stroke: '#6366f1', strokeWidth: 2 },
       }));
 
       setNodes(rfNodes);
@@ -159,7 +158,7 @@ export default function Workflows() {
 
   const onConnect = useCallback(
     (params: Connection) =>
-      setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: '#6366f1' } }, eds)),
+      setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: '#6366f1', strokeWidth: 2 } }, eds)),
     [setEdges]
   );
 
@@ -190,28 +189,28 @@ export default function Workflows() {
   };
 
   return (
-    <div className="h-[calc(100vh-3rem)] flex gap-4">
-      {/* 左侧面板 - 工作流列表 + 节点类型 */}
-      <div className="w-64 flex-shrink-0 flex flex-col gap-4 overflow-y-auto">
+    <div className="h-[calc(100vh-3rem)] flex gap-4 page-enter">
+      {/* 左侧面板 */}
+      <div className="w-64 flex-shrink-0 flex flex-col gap-3 overflow-y-auto">
         {/* 工作流列表 */}
-        <div className="card">
-          <h3 className="font-semibold mb-3">工作流</h3>
+        <div className="bg-gray-900 rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-white mb-3">工作流</h3>
           {workflows.length === 0 ? (
-            <p className="text-sm text-gray-400">从模板创建</p>
+            <p className="text-xs text-gray-500">从下方模板创建</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {workflows.map((wf) => (
                 <button
                   key={wf.id}
                   onClick={() => loadWorkflow(wf.id)}
-                  className={`w-full text-left p-2 rounded-lg text-sm transition-colors ${
+                  className={`w-full text-left p-2.5 rounded-lg text-sm transition-all duration-150 ${
                     selectedId === wf.id
-                      ? 'bg-primary-50 border border-primary-200'
-                      : 'bg-gray-50 hover:bg-gray-100'
+                      ? 'bg-white/12 text-white border border-indigo-400/30'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/8 hover:text-gray-200'
                   }`}
                 >
-                  <div className="font-medium truncate">{wf.name}</div>
-                  <span className={`badge text-xs ${wf.status === 'active' ? 'badge-green' : 'badge-yellow'}`}>
+                  <div className="font-medium truncate text-xs">{wf.name}</div>
+                  <span className={`badge text-[10px] mt-1 ${wf.status === 'active' ? 'badge-green' : 'badge-yellow'}`}>
                     {wf.status}
                   </span>
                 </button>
@@ -220,43 +219,45 @@ export default function Workflows() {
           )}
 
           {/* 从模板创建 */}
-          <div className="mt-4 space-y-2">
-            <p className="text-xs font-medium text-gray-500">从模板创建:</p>
-            <button
-              onClick={() => createFromTemplate('standard-hybrid')}
-              className="w-full text-left p-2 bg-purple-50 hover:bg-purple-100 rounded-lg text-xs transition-colors"
-            >
-              🔄 标准混合查询流程
-            </button>
-            <button
-              onClick={() => createFromTemplate('simple-rag')}
-              className="w-full text-left p-2 bg-cyan-50 hover:bg-cyan-100 rounded-lg text-xs transition-colors"
-            >
-              🔍 简单 RAG 检索
-            </button>
-            <button
-              onClick={() => createFromTemplate('data-pipeline')}
-              className="w-full text-left p-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-xs transition-colors"
-            >
-              📊 数据分析流程
-            </button>
+          <div className="mt-4 pt-3 border-t border-white/10">
+            <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-2">从模板创建</p>
+            <div className="space-y-1.5">
+              <button
+                onClick={() => createFromTemplate('standard-hybrid')}
+                className="w-full text-left px-3 py-2 bg-gradient-to-r from-purple-500/15 to-transparent hover:from-purple-500/25 rounded-lg text-xs text-gray-300 transition-all duration-150"
+              >
+                🔄 标准混合查询流程
+              </button>
+              <button
+                onClick={() => createFromTemplate('simple-rag')}
+                className="w-full text-left px-3 py-2 bg-gradient-to-r from-cyan-500/15 to-transparent hover:from-cyan-500/25 rounded-lg text-xs text-gray-300 transition-all duration-150"
+              >
+                🔍 简单 RAG 检索
+              </button>
+              <button
+                onClick={() => createFromTemplate('data-pipeline')}
+                className="w-full text-left px-3 py-2 bg-gradient-to-r from-indigo-500/15 to-transparent hover:from-indigo-500/25 rounded-lg text-xs text-gray-300 transition-all duration-150"
+              >
+                📊 数据分析流程
+              </button>
+            </div>
           </div>
         </div>
 
         {/* 节点类型 */}
-        <div className="card">
-          <h3 className="font-semibold mb-3">节点类型</h3>
-          <div className="space-y-2">
+        <div className="bg-gray-900 rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-white mb-3">节点类型</h3>
+          <div className="space-y-1.5">
             {nodeTypes_.map((nt) => (
               <button
                 key={nt.type}
                 onClick={() => addNode(nt)}
-                className="w-full text-left p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2"
+                className="w-full text-left px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-150 flex items-center gap-2.5"
               >
-                <span className="text-lg">{nt.icon}</span>
+                <span className="text-base">{nt.icon}</span>
                 <div>
-                  <div className="text-sm font-medium">{nt.label}</div>
-                  <div className="text-xs text-gray-400">{nt.category}</div>
+                  <div className="text-xs font-medium text-gray-300">{nt.label}</div>
+                  <div className="text-[10px] text-gray-500">{nt.category}</div>
                 </div>
               </button>
             ))}
@@ -264,8 +265,8 @@ export default function Workflows() {
         </div>
       </div>
 
-      {/* 中间 - ReactFlow 画布 */}
-      <div className="flex-1 bg-white rounded-xl border border-gray-200 overflow-hidden">
+      {/* ReactFlow 画布 */}
+      <div className="flex-1 bg-white rounded-xl border border-gray-200/60 overflow-hidden shadow-card">
         {selectedId ? (
           <ReactFlow
             nodes={nodes}
@@ -280,30 +281,35 @@ export default function Workflows() {
             <Controls />
             <MiniMap />
             <Panel position="top-left">
-              <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm border p-2">
+              <div className="flex items-center gap-2 bg-white/95 backdrop-blur-sm rounded-xl shadow-card border border-gray-200/60 p-2">
                 <input
-                  className="input w-48 text-sm"
+                  className="input w-44 text-sm"
                   value={workflowName}
                   onChange={(e) => setWorkflowName(e.target.value)}
                   placeholder="工作流名称"
                 />
-                <button onClick={saveWorkflow} disabled={saving} className="btn-primary text-sm py-1.5">
+                <button onClick={saveWorkflow} disabled={saving} className="btn-primary text-sm py-1.5 px-3">
                   <Save className="w-4 h-4" />
                 </button>
-                <button onClick={exportJSON} className="btn-secondary text-sm py-1.5">
+                <button onClick={exportJSON} className="btn-ghost">
                   <Download className="w-4 h-4" />
                 </button>
-                <button onClick={deleteWorkflow} className="btn-danger text-sm py-1.5">
+                <button onClick={deleteWorkflow} className="btn-ghost hover:!bg-red-50 hover:!text-red-600">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </Panel>
           </ReactFlow>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            <div className="text-center">
-              <p className="text-lg mb-2">选择或创建工作流</p>
-              <p className="text-sm">从左侧模板创建，或点击节点类型开始搭建</p>
+          <div className="flex items-center justify-center h-full">
+            <div className="empty-state">
+              <div className="empty-state-icon">
+                <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                </svg>
+              </div>
+              <p className="empty-state-title">选择或创建工作流</p>
+              <p className="empty-state-desc">从左侧模板创建，或点击节点类型开始搭建</p>
             </div>
           </div>
         )}

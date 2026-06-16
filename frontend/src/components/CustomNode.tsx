@@ -1,16 +1,15 @@
 import { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 
-// 节点类型对应的图标和颜色
-const nodeStyles: Record<string, { icon: string; color: string; bgColor: string }> = {
-  classify: { icon: '🧭', color: 'border-purple-400', bgColor: 'bg-purple-50' },
-  route: { icon: '🔀', color: 'border-violet-400', bgColor: 'bg-violet-50' },
-  query_sql: { icon: '🗃️', color: 'border-blue-400', bgColor: 'bg-blue-50' },
-  query_rag: { icon: '🔍', color: 'border-cyan-400', bgColor: 'bg-cyan-50' },
-  query_both: { icon: '⚡', color: 'border-indigo-400', bgColor: 'bg-indigo-50' },
-  merge: { icon: '🔗', color: 'border-green-400', bgColor: 'bg-green-50' },
-  reflect: { icon: '💭', color: 'border-amber-400', bgColor: 'bg-amber-50' },
-  custom: { icon: '⚙️', color: 'border-gray-400', bgColor: 'bg-gray-50' },
+const nodeStyles: Record<string, { icon: string; borderColor: string; bgGradient: string }> = {
+  classify:  { icon: '🧭', borderColor: 'border-purple-300',   bgGradient: 'bg-gradient-to-br from-purple-50 to-violet-50' },
+  route:     { icon: '🔀', borderColor: 'border-violet-300',   bgGradient: 'bg-gradient-to-br from-violet-50 to-fuchsia-50' },
+  query_sql: { icon: '🗃️', borderColor: 'border-indigo-300',   bgGradient: 'bg-gradient-to-br from-indigo-50 to-blue-50' },
+  query_rag: { icon: '🔍', borderColor: 'border-cyan-300',     bgGradient: 'bg-gradient-to-br from-cyan-50 to-sky-50' },
+  query_both:{ icon: '⚡', borderColor: 'border-blue-300',     bgGradient: 'bg-gradient-to-br from-blue-50 to-indigo-50' },
+  merge:     { icon: '🔗', borderColor: 'border-emerald-300',  bgGradient: 'bg-gradient-to-br from-emerald-50 to-teal-50' },
+  reflect:   { icon: '💭', borderColor: 'border-amber-300',    bgGradient: 'bg-gradient-to-br from-amber-50 to-orange-50' },
+  custom:    { icon: '⚙️', borderColor: 'border-gray-300',     bgGradient: 'bg-gradient-to-br from-gray-50 to-slate-50' },
 };
 
 function CustomNode({ data, selected }: NodeProps) {
@@ -18,33 +17,30 @@ function CustomNode({ data, selected }: NodeProps) {
 
   return (
     <div
-      className={`px-4 py-3 rounded-lg border-2 shadow-sm ${style.color} ${style.bgColor} ${
-        selected ? 'ring-2 ring-primary-500 shadow-lg' : ''
-      } min-w-[140px]`}
+      className={`px-4 py-3 rounded-xl border-2 ${style.borderColor} ${style.bgGradient} ${
+        selected ? 'ring-2 ring-indigo-500/50 shadow-lg' : 'shadow-md'
+      } min-w-[150px] transition-all duration-200`}
     >
-      {/* 输入连接点 */}
       <Handle
         type="target"
         position={Position.Top}
-        className="!w-3 !h-3 !bg-gray-400 !border-2 !border-white"
+        className="!w-3 !h-3 !bg-indigo-400 !border-2 !border-white !shadow-sm"
       />
 
-      {/* 节点内容 */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         <span className="text-xl">{style.icon}</span>
         <div>
-          <div className="font-medium text-sm text-gray-900">{data.label as string}</div>
+          <div className="font-semibold text-sm text-gray-900">{data.label as string}</div>
           {data.description ? (
             <div className="text-xs text-gray-500 mt-0.5">{String(data.description)}</div>
           ) : null}
         </div>
       </div>
 
-      {/* 输出连接点 */}
       <Handle
         type="source"
         position={Position.Bottom}
-        className="!w-3 !h-3 !bg-gray-400 !border-2 !border-white"
+        className="!w-3 !h-3 !bg-indigo-400 !border-2 !border-white !shadow-sm"
       />
     </div>
   );

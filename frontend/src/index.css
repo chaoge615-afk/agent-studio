@@ -4,90 +4,208 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-gray-50 text-gray-900 antialiased font-sans;
   }
 }
 
 @layer components {
+  /* ===== Cards ===== */
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+    @apply bg-white rounded-xl border border-gray-200/60 p-6 transition-all duration-200;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   }
 
+  .card-hover {
+    @apply card cursor-pointer;
+  }
+  .card-hover:hover {
+    @apply -translate-y-0.5;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08), 0 4px 10px -5px rgba(0,0,0,0.04);
+  }
+
+  /* ===== Buttons ===== */
   .btn-primary {
-    @apply bg-primary-600 text-white px-4 py-2 rounded-lg font-medium
-           hover:bg-primary-700 transition-colors duration-200
+    @apply bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-lg font-medium
+           transition-all duration-200 active:scale-[0.98]
            disabled:opacity-50 disabled:cursor-not-allowed;
+    box-shadow: 0 1px 3px rgba(99, 102, 241, 0.3);
+  }
+  .btn-primary:hover:not(:disabled) {
+    @apply from-indigo-500 to-purple-500;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
   }
 
   .btn-secondary {
-    @apply bg-white text-gray-700 px-4 py-2 rounded-lg font-medium border border-gray-300
-           hover:bg-gray-50 transition-colors duration-200;
+    @apply bg-white text-gray-700 px-4 py-2 rounded-lg font-medium
+           border border-gray-200/60 hover:bg-gray-50 hover:border-gray-300
+           transition-all duration-200 active:scale-[0.98];
+  }
+
+  .btn-ghost {
+    @apply text-gray-500 p-2 rounded-lg transition-all duration-200
+           hover:bg-gray-100 hover:text-gray-700 active:scale-[0.95];
   }
 
   .btn-danger {
     @apply bg-red-600 text-white px-4 py-2 rounded-lg font-medium
-           hover:bg-red-700 transition-colors duration-200;
+           hover:bg-red-500 transition-all duration-200 active:scale-[0.98];
   }
 
+  /* ===== Input ===== */
   .input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg
-           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full px-3 py-2 border border-gray-200/60 rounded-lg text-sm
+           bg-white transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400;
   }
 
+  /* ===== Badges ===== */
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
-
   .badge-blue {
-    @apply bg-blue-100 text-blue-800;
+    @apply bg-indigo-50 text-indigo-700 border border-indigo-200/50;
   }
-
   .badge-green {
-    @apply bg-green-100 text-green-800;
+    @apply bg-emerald-50 text-emerald-700 border border-emerald-200/50;
   }
-
   .badge-yellow {
-    @apply bg-yellow-100 text-yellow-800;
+    @apply bg-amber-50 text-amber-700 border border-amber-200/50;
   }
-
   .badge-red {
-    @apply bg-red-100 text-red-800;
+    @apply bg-red-50 text-red-700 border border-red-200/50;
   }
-
   .badge-purple {
-    @apply bg-purple-100 text-purple-800;
+    @apply bg-purple-50 text-purple-700 border border-purple-200/50;
   }
 
+  /* ===== Status badge with pulse ===== */
+  .status-active {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+           bg-emerald-50 text-emerald-700 border border-emerald-200/50;
+  }
+  .status-active::before {
+    @apply w-1.5 h-1.5 rounded-full bg-emerald-500;
+    content: '';
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  .status-stopped {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+           bg-amber-50 text-amber-700 border border-amber-200/50;
+  }
+  .status-stopped::before {
+    @apply w-1.5 h-1.5 rounded-full bg-amber-500;
+    content: '';
+  }
+
+  .status-error {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+           bg-red-50 text-red-700 border border-red-200/50;
+  }
+  .status-error::before {
+    @apply w-1.5 h-1.5 rounded-full bg-red-500;
+    content: '';
+  }
+
+  /* ===== Stat cards ===== */
   .stat-card {
     @apply card flex flex-col;
   }
-
   .stat-value {
-    @apply text-3xl font-bold text-gray-900;
+    @apply text-3xl font-bold text-gray-900 tracking-tight;
   }
-
   .stat-label {
     @apply text-sm text-gray-500 mt-1;
   }
 
-  /* ReactFlow 自定义节点 */
-  .react-flow__node {
-    @apply shadow-md rounded-lg border-2;
+  /* ===== List items ===== */
+  .list-item {
+    @apply p-3 bg-gray-50/50 rounded-lg border border-gray-100
+           hover:bg-gray-50 hover:border-gray-200/60 transition-all duration-150;
+  }
+  .list-item-active {
+    @apply p-3 bg-indigo-50/50 rounded-lg border border-indigo-200/50 transition-all duration-150;
   }
 
+  /* ===== Empty state ===== */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-16 text-center;
+  }
+  .empty-state-icon {
+    @apply w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4 text-gray-400;
+  }
+  .empty-state-title {
+    @apply text-base font-medium text-gray-600 mb-1;
+  }
+  .empty-state-desc {
+    @apply text-sm text-gray-400;
+  }
+
+  /* ===== Loading spinner ===== */
+  .spinner-container {
+    @apply flex items-center justify-center h-64;
+  }
+  .spinner {
+    @apply w-8 h-8 rounded-full border-2 border-gray-200;
+    border-top-color: #6366f1;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ===== Page entrance ===== */
+  .page-enter {
+    animation: fade-in-up 0.4s ease-out forwards;
+  }
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+
+  /* ===== Page header ===== */
+  .page-header {
+    @apply flex items-center justify-between;
+  }
+  .page-title {
+    @apply text-2xl font-bold text-gray-900 tracking-tight;
+  }
+  .page-subtitle {
+    @apply text-sm text-gray-500 mt-1;
+  }
+
+  /* ===== ReactFlow nodes ===== */
+  .react-flow__node {
+    @apply rounded-lg border-2;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
   .react-flow__node-routing {
     @apply border-purple-400 bg-purple-50;
   }
-
   .react-flow__node-query {
-    @apply border-blue-400 bg-blue-50;
+    @apply border-indigo-400 bg-indigo-50;
   }
-
   .react-flow__node-output {
-    @apply border-green-400 bg-green-50;
+    @apply border-emerald-400 bg-emerald-50;
+  }
+  .react-flow__node.selected {
+    @apply border-indigo-500;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
   }
 
-  .react-flow__node.selected {
-    @apply border-primary-500 shadow-lg;
+  /* ===== Timeline ===== */
+  .timeline-item {
+    @apply relative pl-8 pb-4;
+  }
+  .timeline-item::before {
+    @apply absolute left-3 top-3 w-px h-full bg-gray-200;
+    content: '';
+  }
+  .timeline-item:last-child::before {
+    display: none;
+  }
+  .timeline-item::after {
+    @apply absolute left-[9px] top-2 w-2.5 h-2.5 rounded-full bg-indigo-400 border-2 border-white;
+    content: '';
   }
 }

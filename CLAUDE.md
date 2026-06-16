@@ -4,7 +4,7 @@
 Agent 开发平台 — 可视化管理界面，用于创建、配置和监控 AI Agent。整合 Phase 12-17 所有能力。
 
 ## 技术栈
-- **前端**: React 18 + TypeScript + Vite + Tailwind CSS + ReactFlow + Recharts
+- **前端**: React 18 + TypeScript + Vite + Tailwind CSS 3 + ReactFlow + Recharts
 - **后端**: FastAPI + aiosqlite (SQLite 异步)
 - **代理目标**: agent-platform (http://localhost:8001)
 
@@ -18,19 +18,22 @@ agent-studio/
 │   │   └── routers/       # API 路由
 │   └── requirements.txt
 ├── frontend/               # React 前端 (端口 5173)
+│   ├── postcss.config.js  # PostCSS 配置 (Tailwind + Autoprefixer) — 必须存在
+│   ├── tailwind.config.js # Tailwind 主题 (indigo 主色 + sidebar 深色色板)
 │   └── src/
+│       ├── index.css      # 设计系统: card, btn-*, input, badge, status-*, list-item, empty-state, spinner
 │       ├── api/           # API 客户端
-│       ├── components/    # Layout, Sidebar, CustomNode, StatCard
+│       ├── components/    # Layout, Sidebar(深色), CustomNode, StatCard
 │       └── pages/         # Dashboard, Agents, Workflows, Tools, Memory, Audit, Security
 └── README.md
 ```
 
 ## 启动方式
 ```bash
-# 后端
+# 后端 (需要系统 Python，非 hermes venv)
 cd backend
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-uvicorn app.main:app --reload --port 8002
+python -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+python -m uvicorn app.main:app --reload --port 8002
 
 # 前端
 cd frontend
@@ -38,12 +41,26 @@ npm install
 npm run dev
 ```
 
+## 设计规范
+- **主色**: indigo 色板 (`#6366f1` 系列)，非默认蓝色
+- **侧边栏**: 深色背景 `bg-sidebar` (`#0f1117`)，白色文字，indigo 激活指示条
+- **字体**: 系统字体栈 (PingFang SC / Microsoft YaHei / Segoe UI)，**禁止使用 Google Fonts**（国内被墙会阻塞渲染）
+- **卡片**: `.card` + `.card-hover`（hover 上浮 + 阴影加深），边框 `border-gray-200/60`
+- **按钮**: `.btn-primary`（indigo→purple 渐变）、`.btn-secondary`、`.btn-ghost`、`.btn-danger`，均带 `active:scale-[0.98]`
+- **状态**: `.status-active`（脉冲绿点）、`.status-stopped`（黄点）、`.status-error`（红点）
+- **空状态**: `.empty-state` + `.empty-state-icon` + `.empty-state-title` + `.empty-state-desc`
+- **加载**: `.spinner-container` + `.spinner`（indigo 旋转圆环）
+- **列表**: `.list-item` / `.list-item-active`
+- **动画**: `.page-enter`（页面入场 fade-in-up）、`.stagger-1~4`（递增延迟）
+- 前端使用 Tailwind CSS，不引入其他 CSS 框架
+- **postcss.config.js 必须存在**，否则 Tailwind `@tailwind` / `@apply` 指令不会被编译
+- 所有 API 通过 Vite proxy 代理到后端
+- 后端代理到 agent-platform (http://localhost:8001)
+
 ## 开发规范
 - Python 依赖使用国内镜像: `pip install -i https://pypi.tuna.tsinghua.edu.cn/simple`
 - 环境变量走 `.env`，不硬编码
-- 前端使用 Tailwind CSS，不引入其他 CSS 框架
-- 所有 API 通过 Vite proxy 代理到后端
-- 后端代理到 agent-platform (http://localhost:8001)
+- 后端启动需用系统 Python (`python -m uvicorn`)，避免 venv 路径问题
 
 ## API 端点
 

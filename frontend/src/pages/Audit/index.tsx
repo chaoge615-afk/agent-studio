@@ -62,19 +62,19 @@ export default function Audit() {
 
   if (loading && logs.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      <div className="spinner-container">
+        <div className="spinner" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       {/* 标题 */}
-      <div className="flex items-center justify-between">
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl font-bold">审计日志</h1>
-          <p className="text-gray-500 mt-1">Agent 执行链路追踪 ({logs.length} 条记录)</p>
+          <h1 className="page-title">审计日志</h1>
+          <p className="page-subtitle">Agent 执行链路追踪 ({logs.length} 条记录)</p>
         </div>
         <button onClick={loadFiltered} className="btn-secondary flex items-center gap-2">
           <Filter className="w-4 h-4" />
@@ -83,89 +83,99 @@ export default function Audit() {
       </div>
 
       {/* 筛选器 */}
-      <div className="card flex gap-4 items-end">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">事件类型</label>
-          <select
-            className="input w-48"
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-          >
-            <option value="">全部类型</option>
-            {eventTypes.map((t) => (
-              <option key={t.type} value={t.type}>
-                {t.icon} {t.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">线程 ID</label>
-          <input
-            className="input w-48"
-            placeholder="default"
-            value={filterThread}
-            onChange={(e) => setFilterThread(e.target.value)}
-          />
+      <div className="card py-4">
+        <div className="flex gap-4 items-end">
+          <div className="flex-1">
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">事件类型</label>
+            <select
+              className="input"
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+            >
+              <option value="">全部类型</option>
+              {eventTypes.map((t) => (
+                <option key={t.type} value={t.type}>
+                  {t.icon} {t.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">线程 ID</label>
+            <input
+              className="input"
+              placeholder="default"
+              value={filterThread}
+              onChange={(e) => setFilterThread(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 
       {/* 时间线 */}
       <div className="card">
-        <div className="flex items-center gap-2 mb-4">
-          <ScrollText className="w-5 h-5 text-gray-500" />
-          <h2 className="text-lg font-semibold">事件时间线</h2>
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-1 h-5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full" />
+          <h2 className="text-base font-semibold text-gray-900">事件时间线</h2>
         </div>
 
         {logs.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <ScrollText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>暂无审计日志</p>
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <ScrollText className="w-7 h-7" />
+            </div>
+            <p className="empty-state-title">暂无审计日志</p>
+            <p className="empty-state-desc">Agent 执行请求后将自动记录事件</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-0">
             {logs.map((log) => (
-              <div key={log.id} className="flex gap-4 p-3 bg-gray-50 rounded-lg">
-                {/* 时间 */}
-                <div className="text-xs text-gray-400 whitespace-nowrap w-36 pt-0.5">
-                  {new Date(log.timestamp).toLocaleString('zh-CN')}
-                </div>
-
-                {/* 图标 + 内容 */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{getEventIcon(log.event_type)}</span>
-                    <span className={`badge ${getEventBadge(log.event_type)}`}>
-                      {log.event_type}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      [{log.thread_id}]
-                    </span>
+              <div key={log.id} className="timeline-item">
+                <div className="list-item">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{getEventIcon(log.event_type)}</span>
+                      <span className={`badge ${getEventBadge(log.event_type)}`}>
+                        {log.event_type}
+                      </span>
+                      <span className="text-[11px] text-gray-400 font-mono">
+                        {log.thread_id}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {log.duration_ms != null && (
+                        <span className="text-xs text-gray-400 font-mono">
+                          {log.duration_ms.toFixed(0)}ms
+                        </span>
+                      )}
+                      <span className="text-xs text-gray-400">
+                        {new Date(log.timestamp).toLocaleString('zh-CN')}
+                      </span>
+                    </div>
                   </div>
 
                   {/* 事件详情 */}
-                  <div className="mt-1 text-sm text-gray-600">
+                  <div className="text-sm text-gray-600 space-y-0.5">
                     {log.event_data?.question && (
-                      <p className="truncate">问: {log.event_data.question}</p>
+                      <p className="truncate">
+                        <span className="font-medium text-indigo-600">问:</span> {log.event_data.question}
+                      </p>
                     )}
                     {log.event_data?.answer_preview && (
-                      <p className="truncate">答: {log.event_data.answer_preview}</p>
+                      <p className="truncate">
+                        <span className="font-medium text-emerald-600">答:</span> {log.event_data.answer_preview}
+                      </p>
                     )}
                     {log.event_data?.node && (
-                      <p>节点: {log.event_data.node} → {log.event_data.route_type || log.event_data.server || ''}</p>
+                      <p className="text-xs text-gray-500">
+                        节点: {log.event_data.node} → {log.event_data.route_type || log.event_data.server || ''}
+                      </p>
                     )}
                     {log.event_data?.action && (
-                      <p className="text-red-600">{log.event_data.action}: {log.event_data.reason}</p>
+                      <p className="text-sm text-red-600 font-medium">{log.event_data.action}: {log.event_data.reason}</p>
                     )}
                   </div>
                 </div>
-
-                {/* 耗时 */}
-                {log.duration_ms != null && (
-                  <div className="text-xs text-gray-400 whitespace-nowrap">
-                    {log.duration_ms.toFixed(0)}ms
-                  </div>
-                )}
               </div>
             ))}
           </div>
