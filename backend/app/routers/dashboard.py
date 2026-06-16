@@ -44,17 +44,20 @@ async def dashboard_stats():
     audit_stats = await _proxy_get("/api/audit/stats")
     health = await _proxy_get("/health")
 
-    # 查询最近的活动
+    # 查询最近的活动（JOIN agent_templates 获取 type 和 icon）
     cursor = await db.execute(
-        "SELECT id, name, type, icon, created_at FROM agent_instances ORDER BY created_at DESC LIMIT 5"
+        """SELECT i.id, i.name, t.type, t.icon, i.created_at
+           FROM agent_instances i
+           LEFT JOIN agent_templates t ON i.template_id = t.id
+           ORDER BY i.created_at DESC LIMIT 5"""
     )
     rows = await cursor.fetchall()
     recent_agents = [
         {
             "id": row["id"],
             "name": row["name"],
-            "type": row["type"],
-            "icon": row["icon"],
+            "type": row["type"] or "unknown",
+            "icon": row["icon"] or "🤖",
             "created_at": row["created_at"],
         }
         for row in rows
