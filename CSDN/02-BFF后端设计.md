@@ -31,7 +31,7 @@ BFF 的核心思想：**前端需要什么，后端就聚合什么**。我们的
 ┌────────────┐       ┌──────────────────────────────────┐       ┌──────────────────┐
 │  React     │ REST  │       Agent Studio BFF           │       │  agent-platform  │
 │  前端      │──────▶│                                  │──────▶│  (FastAPI:8001)  │
-│  :5173     │◀──────│  main.py (:8000)                 │◀──────│                  │
+│  :5173     │◀──────│  main.py (:8002)                 │◀──────│                  │
 └────────────┘       │                                  │       └──────────────────┘
                      │  ┌──────────┐  ┌──────────────┐  │
                      │  │ agents   │  │ tools        │  │
@@ -300,10 +300,12 @@ async def dashboard_stats():
     audit_stats = await _proxy_get("/api/audit/stats")
     health = await _proxy_get("/health")
 
-    # ③ 最近创建的实例
+    # ③ 最近创建的实例（JOIN 拿模板的 type 和 icon）
     cursor = await db.execute(
-        "SELECT id, name, type, icon, created_at "
-        "FROM agent_instances ORDER BY created_at DESC LIMIT 5"
+        "SELECT i.id, i.name, t.type, t.icon, i.created_at "
+        "FROM agent_instances i "
+        "LEFT JOIN agent_templates t ON i.template_id = t.id "
+        "ORDER BY i.created_at DESC LIMIT 5"
     )
     recent_agents = [
         {"id": r["id"], "name": r["name"], "icon": r["icon"], "created_at": r["created_at"]}
@@ -321,7 +323,7 @@ async def dashboard_stats():
     }
 ```
 
-一个请求，五次数据获取（三次 SQL + 两次远端代理），融合成一个 JSON。前端只调一次接口，不用操心数据来自哪里。
+一个请求，六次数据获取（四次 SQL + 两次远端代理），融合成一个 JSON。前端只调一次接口，不用操心数据来自哪里。
 
 ## 七、工作流引擎：模板与节点类型
 
