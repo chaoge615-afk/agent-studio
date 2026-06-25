@@ -213,7 +213,7 @@ async def create_instance(data: AgentInstanceCreate):
     instance_id = f"inst-{uuid.uuid4().hex[:8]}"
     await db.execute(
         "INSERT INTO agent_instances (id,template_id,name,config,workflow_id,status) VALUES (?,?,?,?,?,'active')",
-        (instance_id, data.template_id, data.name, json.dumps(merged_config), data.workflow_id),
+        (instance_id, data.template_id, data.name, json.dumps(merged_config, ensure_ascii=False), data.workflow_id),
     )
     await db.commit()
     return {"id": instance_id, "name": data.name, "config": merged_config, "status": "active"}

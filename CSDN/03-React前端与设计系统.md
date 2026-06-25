@@ -312,24 +312,24 @@ export default function StatCard({ icon, label, value, change, color = 'blue' }:
 
 ```tsx
 const nodeStyles = {
-  classify:   { icon: '🧭', borderColor: 'border-purple-300',   bgGradient: 'from-purple-50 to-violet-50' },
-  route:      { icon: '🔀', borderColor: 'border-violet-300',   bgGradient: 'from-violet-50 to-fuchsia-50' },
-  query_sql:  { icon: '🗃️', borderColor: 'border-indigo-300',   bgGradient: 'from-indigo-50 to-blue-50' },
-  query_rag:  { icon: '🔍', borderColor: 'border-cyan-300',     bgGradient: 'from-cyan-50 to-sky-50' },
-  query_both: { icon: '⚡', borderColor: 'border-blue-300',     bgGradient: 'from-blue-50 to-indigo-50' },
-  merge:      { icon: '🔗', borderColor: 'border-emerald-300',  bgGradient: 'from-emerald-50 to-teal-50' },
-  reflect:    { icon: '💭', borderColor: 'border-amber-300',    bgGradient: 'from-amber-50 to-orange-50' },
-  custom:     { icon: '⚙️', borderColor: 'border-gray-300',     bgGradient: 'from-gray-50 to-slate-50' },
+  classify:   { icon: '🧭', borderColor: 'border-purple-300',   bgGradient: 'bg-gradient-to-br from-purple-50 to-violet-50' },
+  route:      { icon: '🔀', borderColor: 'border-violet-300',   bgGradient: 'bg-gradient-to-br from-violet-50 to-fuchsia-50' },
+  query_sql:  { icon: '🗃️', borderColor: 'border-indigo-300',   bgGradient: 'bg-gradient-to-br from-indigo-50 to-blue-50' },
+  query_rag:  { icon: '🔍', borderColor: 'border-cyan-300',     bgGradient: 'bg-gradient-to-br from-cyan-50 to-sky-50' },
+  query_both: { icon: '⚡', borderColor: 'border-blue-300',     bgGradient: 'bg-gradient-to-br from-blue-50 to-indigo-50' },
+  merge:      { icon: '🔗', borderColor: 'border-emerald-300',  bgGradient: 'bg-gradient-to-br from-emerald-50 to-teal-50' },
+  reflect:    { icon: '💭', borderColor: 'border-amber-300',    bgGradient: 'bg-gradient-to-br from-amber-50 to-orange-50' },
+  custom:     { icon: '⚙️', borderColor: 'border-gray-300',     bgGradient: 'bg-gradient-to-br from-gray-50 to-slate-50' },
 };
 
 function CustomNode({ data, selected }: NodeProps) {
   const style = nodeStyles[data.nodeType as string] || nodeStyles.custom;
   return (
     <div className={`px-4 py-3 rounded-xl border-2 ${style.borderColor}
-      bg-gradient-to-br ${style.bgGradient} ${selected ? 'ring-2 ring-indigo-500/50 shadow-lg' : 'shadow-md'}
+      ${style.bgGradient} ${selected ? 'ring-2 ring-indigo-500/50 shadow-lg' : 'shadow-md'}
       min-w-[150px] transition-all duration-200`}>
       <Handle type="target" position={Position.Top}
-        className="!w-3 !h-3 !bg-indigo-400 !border-2 !border-white" />
+        className="!w-3 !h-3 !bg-indigo-400 !border-2 !border-white !shadow-sm" />
       <div className="flex items-center gap-2.5">
         <span className="text-xl">{style.icon}</span>
         <div>
@@ -338,7 +338,7 @@ function CustomNode({ data, selected }: NodeProps) {
         </div>
       </div>
       <Handle type="source" position={Position.Bottom}
-        className="!w-3 !h-3 !bg-indigo-400 !border-2 !border-white" />
+        className="!w-3 !h-3 !bg-indigo-400 !border-2 !border-white !shadow-sm" />
     </div>
   );
 }
