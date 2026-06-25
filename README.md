@@ -17,7 +17,7 @@ agent-studio/
 │   │   ├── main.py            # 入口
 │   │   ├── db.py              # SQLite 数据库 + 预置模板
 │   │   └── routers/           # API 路由
-│   │       ├── agents.py      # Agent 模板管理
+│   │       ├── agents.py      # Agent 模板管理 (使用 Pydantic AgentTemplateCreate 模型确保 UTF-8 支持)
 │   │       ├── workflows.py   # 工作流管理 + ReactFlow
 │   │       ├── tools.py       # MCP 工具代理
 │   │       ├── memory.py      # 记忆系统代理
@@ -53,7 +53,8 @@ agent-studio/
 
 ```bash
 cd backend
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+python -m venv venv
+venv/Scripts/pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 python -m uvicorn app.main:app --reload --port 8002
 ```
 
@@ -71,7 +72,7 @@ npm run dev
 - 后端 API: http://localhost:8002/docs
 - 前提: agent-platform 运行在 http://localhost:8001
 
-> **注意**: 如果 `uvicorn` 命令指向其他 venv，使用 `python -m uvicorn` 确保使用当前环境的 Python。
+> **注意**: 后端使用独立的 venv。激活方式：`venv/Scripts/activate`（Windows）或 `source venv/bin/activate`（Linux/macOS）。使用 `python -m uvicorn` 确保使用当前 venv 的 Python。
 
 ## 设计风格
 

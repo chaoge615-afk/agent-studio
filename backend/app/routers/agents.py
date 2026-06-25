@@ -12,6 +12,14 @@ from app.db import get_db
 router = APIRouter()
 
 
+class AgentTemplateCreate(BaseModel):
+    name: str = "自定义 Agent"
+    description: str = ""
+    type: str = "custom"
+    icon: str = "🤖"
+    config: dict = {}
+
+
 class AgentInstanceCreate(BaseModel):
     template_id: str
     name: str
@@ -68,19 +76,19 @@ async def get_agent(agent_id: str):
 
 
 @router.post("")
-async def create_agent_template(data: dict):
+async def create_agent_template(data: AgentTemplateCreate):
     """创建自定义 Agent 模板"""
     agent_id = f"custom-{uuid.uuid4().hex[:8]}"
     db = await get_db()
     await db.execute(
         """INSERT INTO agent_templates (id, name, description, type, icon, config)
            VALUES (?, ?, ?, ?, ?, ?)""",
-        (agent_id, data.get("name", "自定义 Agent"), data.get("description", ""),
-         data.get("type", "custom"), data.get("icon", "🤖"),
-         json.dumps(data.get("config", {}), ensure_ascii=False)),
+        (agent_id, data.name, data.description,
+         data.type, data.icon,
+         json.dumps(data.config, ensure_ascii=False)),
     )
     await db.commit()
-    return {"id": agent_id, "name": data.get("name")}
+    return {"id": agent_id, "name": data.name}
 
 
 @router.delete("/{agent_id}")

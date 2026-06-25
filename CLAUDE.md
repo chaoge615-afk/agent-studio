@@ -12,6 +12,7 @@ Agent 开发平台 — 可视化管理界面，用于创建、配置和监控 AI
 ```
 agent-studio/
 ├── backend/                # FastAPI 管理后端 (端口 8002)
+│   ├── venv/              # Python 虚拟环境 (启动前需创建)
 │   ├── app/
 │   │   ├── main.py        # 入口
 │   │   ├── db.py          # SQLite 数据库 + 预置模板
@@ -30,9 +31,10 @@ agent-studio/
 
 ## 启动方式
 ```bash
-# 后端 (需要系统 Python，非 hermes venv)
+# 后端 (需要系统 Python)
 cd backend
-python -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+python -m venv venv
+venv/Scripts/pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 python -m uvicorn app.main:app --reload --port 8002
 
 # 前端
@@ -60,13 +62,14 @@ npm run dev
 ## 开发规范
 - Python 依赖使用国内镜像: `pip install -i https://pypi.tuna.tsinghua.edu.cn/simple`
 - 环境变量走 `.env`，不硬编码
-- 后端启动需用系统 Python (`python -m uvicorn`)，避免 venv 路径问题
+- 后端启动需用 venv (`python -m venv venv && venv/Scripts/pip install -r requirements.txt`)，隔离项目依赖
+- **K-08 修复**: `POST /api/agents` (`create_agent_template`) 端点必须使用 Pydantic `AgentTemplateCreate` 模型接收请求体，而非原始 `dict`。直接接收 `dict` 会导致中文 UTF-8 字段被错误解析（`jsonable_encoder` 丢失编码信息）。所有新建/更新端点均应使用 Pydantic model 作为参数类型。
 
 ## API 端点
 
 ### Agent 管理
 - `GET /api/agents` — Agent 模板列表
-- `POST /api/agents` — 创建模板
+- `POST /api/agents` — 创建模板 (body: `AgentTemplateCreate` Pydantic model，非 raw dict)
 - `GET /api/agents/instances/list` — 实例列表
 - `POST /api/agents/instances` — 创建实例
 - `PUT /api/agents/instances/{id}` — 更新实例
