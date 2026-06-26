@@ -65,12 +65,20 @@ npm run dev
 - 后端启动需用 venv (`python -m venv venv && venv/Scripts/pip install -r requirements.txt`)，隔离项目依赖
 - **K-08 修复**: `POST /api/agents` (`create_agent_template`) 端点必须使用 Pydantic `AgentTemplateCreate` 模型接收请求体，而非原始 `dict`。直接接收 `dict` 会导致中文 UTF-8 字段被错误解析（`jsonable_encoder` 丢失编码信息）。所有新建/更新端点均应使用 Pydantic model 作为参数类型。
 
+## 已知修复（2026-06-26 遗留问题修复第二轮）
+| 编号 | 修复内容 |
+|------|---------|
+| E2E-08 | `routers/agents.py` 新增 `GET /api/agents/instances` 与 `GET /api/agents/instances/{id}`；**关键**：`GET/DELETE /{agent_id}` 必须注册在所有 `/instances*` 路由之后（文件末尾），否则单段 `{agent_id}` 会拦截 `/instances` → 404「Agent 模板不存在」。`/instances` 与 `/instances/list` 共用 `_list_instances_impl` |
+| PF-02 | `routers/dashboard.py` 改用 `main.py` lifespan 管理的共享 `httpx.AsyncClient`（keep-alive 连接复用，2.3s→0.22s）+ `asyncio.gather` 并行 + 连接失效重试。本地 aiosqlite COUNT 保持串行（内部队列序列化，gather 无收益）。`AGENT_PLATFORM_URL` 默认 `127.0.0.1` 避开 Windows localhost 双栈延迟 |
+
 ## API 端点
 
 ### Agent 管理
 - `GET /api/agents` — Agent 模板列表
 - `POST /api/agents` — 创建模板 (body: `AgentTemplateCreate` Pydantic model，非 raw dict)
-- `GET /api/agents/instances/list` — 实例列表
+- `GET /api/agents/instances` — 实例列表（E2E-08 新增，与 /list 共用实现）
+- `GET /api/agents/instances/list` — 实例列表（兼容前端，保留）
+- `GET /api/agents/instances/{id}` — 实例详情（E2E-08 新增）
 - `POST /api/agents/instances` — 创建实例
 - `PUT /api/agents/instances/{id}` — 更新实例
 - `DELETE /api/agents/instances/{id}` — 删除实例

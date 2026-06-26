@@ -17,11 +17,11 @@ agent-studio/
 │   │   ├── main.py            # 入口
 │   │   ├── db.py              # SQLite 数据库 + 预置模板
 │   │   └── routers/           # API 路由
-│   │       ├── agents.py      # Agent 模板管理 (使用 Pydantic AgentTemplateCreate 模型确保 UTF-8 支持)
+│   │       ├── agents.py      # Agent 模板管理 (Pydantic AgentTemplateCreate；/{agent_id} 路由须在 /instances* 之后)
 │   │       ├── workflows.py   # 工作流管理 + ReactFlow
 │   │       ├── tools.py       # MCP 工具代理
 │   │       ├── memory.py      # 记忆系统代理
-│   │       ├── dashboard.py   # 仪表盘聚合
+│   │       ├── dashboard.py   # 仪表盘聚合 (共享 httpx client + gather 并行)
 │   │       └── audit.py       # 审计日志代理
 │   └── requirements.txt
 ├── frontend/                   # React 前端 (端口 5173)
@@ -106,3 +106,12 @@ npm run dev
 
 - **agent-platform** (http://localhost:8001) — Agent 执行引擎
 - **content-analysis-system** (Docker) — MCP Server 提供方
+
+## 修复记录（2026-06-26 第二轮·遗留问题）
+
+> 基于 6 组诊断 + 6 组对抗审查（共 12 Agent）的修复方案，方案详见 [../遗留问题修复方案.md](../遗留问题修复方案.md)，全部经回归验证通过。
+
+| 编号 | 模块 | 修复内容 | 回归验证 |
+|------|------|----------|----------|
+| E2E-08 | `routers/agents.py` | 实例列表/详情 GET 404/405：新增 `GET /api/agents/instances` 与 `GET /api/agents/instances/{id}`；**GET/DELETE `/{agent_id}` 下移到文件末尾**（避免单段 `{agent_id}` 拦截 `/instances`） | /instances→200（无「模板不存在」）；/instances/{不存在}→404「Agent 实例不存在」；/list 与 /{模板id} 仍 200 |
+| PF-02 | `routers/dashboard.py` `main.py` | dashboard/stats 串行 2.3s：改用 `main.py` lifespan 管理的共享 `httpx.AsyncClient`（keep-alive 连接复用）+ `asyncio.gather` 并行 + 连接失效重试；`AGENT_PLATFORM_URL` 默认 `127.0.0.1` | 3 次 0.25/0.22/0.22s（原 2.3s），audit/health 字段非 error 兜底 |
