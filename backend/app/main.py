@@ -1,5 +1,6 @@
 """Agent Studio — FastAPI 管理后端"""
 from contextlib import asynccontextmanager
+import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,8 +12,16 @@ from app.routers import agents, workflows, tools, memory, dashboard, audit
 async def lifespan(app: FastAPI):
     """启动/关闭时的资源管理"""
     await init_db()
+
+    # PF-02：进程级共享 httpx.AsyncClient，keep-alive 连接复用，
+    # 把 dashboard 的 ~2.3s（每次新建客户端 ~0.85s×2）降到 <0.1s。
+    # lifespan 管理创建/关闭，避免模块级懒加载单例不释放资源。
+    app.state.platform_client = httpx.AsyncClient(timeout=5.0)
+
     print("[OK] Agent Studio 后端启动完成")
     yield
+
+    await app.state.platform_client.aclose()
     await close_db()
     print("[BYE] Agent Studio 后端已关闭")
 

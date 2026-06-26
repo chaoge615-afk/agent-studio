@@ -55,26 +55,6 @@ async def list_agents():
     return {"count": len(agents), "agents": agents}
 
 
-@router.get("/{agent_id}")
-async def get_agent(agent_id: str):
-    """获取 Agent 模板详情"""
-    db = await get_db()
-    cursor = await db.execute("SELECT * FROM agent_templates WHERE id = ?", (agent_id,))
-    row = await cursor.fetchone()
-    if not row:
-        raise HTTPException(status_code=404, detail="Agent 模板不存在")
-
-    return {
-        "id": row["id"],
-        "name": row["name"],
-        "description": row["description"],
-        "type": row["type"],
-        "icon": row["icon"],
-        "config": json.loads(row["config"]),
-        "created_at": row["created_at"],
-    }
-
-
 @router.post("")
 async def create_agent_template(data: AgentTemplateCreate):
     """创建自定义 Agent 模板"""
@@ -91,18 +71,23 @@ async def create_agent_template(data: AgentTemplateCreate):
     return {"id": agent_id, "name": data.name}
 
 
-@router.delete("/{agent_id}")
-async def delete_agent(agent_id: str):
-    """删除 Agent 模板"""
-    db = await get_db()
-    await db.execute("DELETE FROM agent_templates WHERE id = ?", (agent_id,))
-    await db.commit()
-    return {"success": True}
+@router.get("/instances")
+async def list_instances_v2():
+    """列出所有运行中的 Agent 实例（E2E-08：补 GET /instances）
+
+    与 GET /instances/list 共用实现，返回结构一致。
+    """
+    return await _list_instances_impl()
 
 
 @router.get("/instances/list")
 async def list_instances():
-    """列出所有运行中的 Agent 实例"""
+    """列出所有运行中的 Agent 实例（保留 /list 兼容前端 Agents/index.tsx）"""
+    return await _list_instances_impl()
+
+
+async def _list_instances_impl():
+    """实例列表的共享实现（/instances 与 /instances/list 复用）"""
     db = await get_db()
     cursor = await db.execute(
         """SELECT i.*, t.name as template_name, t.icon as template_icon
@@ -127,6 +112,39 @@ async def list_instances():
         })
 
     return {"count": len(instances), "instances": instances}
+
+
+@router.get("/instances/{instance_id}")
+async def get_instance(instance_id: str):
+    """获取 Agent 实例详情（E2E-08：补 GET /instances/{id}）
+
+    注意：此路由必须在 GET /{agent_id} 之前注册（见文件末尾），
+    否则 /instances/inst-xxx 的两段路径虽不会被单段 /{agent_id} 拦截，
+    但保持 /instances* 路由集中在前更清晰、更安全。
+    """
+    db = await get_db()
+    cursor = await db.execute(
+        """SELECT i.*, t.name as template_name, t.icon as template_icon
+           FROM agent_instances i
+           LEFT JOIN agent_templates t ON i.template_id = t.id
+           WHERE i.id = ?""",
+        (instance_id,)
+    )
+    row = await cursor.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Agent 实例不存在")
+
+    return {
+        "id": row["id"],
+        "template_id": row["template_id"],
+        "name": row["name"],
+        "template_name": row["template_name"] if row["template_name"] else "自定义",
+        "template_icon": row["template_icon"] if row["template_icon"] else "🤖",
+        "config": json.loads(row["config"]),
+        "workflow_id": row["workflow_id"],
+        "status": row["status"],
+        "created_at": row["created_at"],
+    }
 
 
 @router.post("/instances")
@@ -188,5 +206,37 @@ async def delete_instance(instance_id: str):
     """删除 Agent 实例"""
     db = await get_db()
     await db.execute("DELETE FROM agent_instances WHERE id = ?", (instance_id,))
+    await db.commit()
+    return {"success": True}
+
+
+# E2E-08 修复：GET/DELETE /{agent_id} 必须注册在所有 /instances* 路由之后，
+# 否则单段路径 /{agent_id} 会先于 /instances 匹配，把 /instances 当成
+# agent_id="instances" → 查模板表无结果 → 404 "Agent 模板不存在"。
+@router.get("/{agent_id}")
+async def get_agent(agent_id: str):
+    """获取 Agent 模板详情"""
+    db = await get_db()
+    cursor = await db.execute("SELECT * FROM agent_templates WHERE id = ?", (agent_id,))
+    row = await cursor.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Agent 模板不存在")
+
+    return {
+        "id": row["id"],
+        "name": row["name"],
+        "description": row["description"],
+        "type": row["type"],
+        "icon": row["icon"],
+        "config": json.loads(row["config"]),
+        "created_at": row["created_at"],
+    }
+
+
+@router.delete("/{agent_id}")
+async def delete_agent(agent_id: str):
+    """删除 Agent 模板"""
+    db = await get_db()
+    await db.execute("DELETE FROM agent_templates WHERE id = ?", (agent_id,))
     await db.commit()
     return {"success": True}
